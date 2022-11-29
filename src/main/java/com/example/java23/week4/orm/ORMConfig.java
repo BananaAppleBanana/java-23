@@ -12,6 +12,68 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+
+/**
+ *  Hibernate vs jpa
+ *
+ *  1 database -> 1 datasource -> 1 session factory / entity manager factory -> m sessions / entity managers
+ *
+ *  Hibernate : session
+ *  JPA       : entity manager
+ *                  persist() : insert
+ *                  merge(stu) : if find id => update
+ *                               if not     => persist(stu)
+ *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+ *   Book  1 - m BARelation m - 1 Author
+ *
+ *   database :
+ *   Book (id(pk), name)
+ *   BARelation (id, b_id(fk), a_id(fk))
+ *   Author (id(pk), name)
+ *
+ *   Java :
+ *   @Table(..)
+ *   class Book {
+ *      @Column(..)
+ *      private String name;
+ *      @OneToMany(mappedBy = "bookField123456")
+ *      private List<BARelation> relations;
+ *   }
+ *
+ *   @Table(..)
+ *   class BARelation {
+ *      @ManyToOne
+ *      @JoinColumn(foreign key column)
+ *      private Author author;
+ *
+ *      @ManyToOne
+ *      @JoinColumn(foreign key column)
+ *      private Book bookField123456;
+ *   }
+ *
+ *   @Table(..)
+ *   class Author {
+ *       @Column(..)
+ *       private String name;
+ *       private List<BARelation> relations;
+ *   }
+ *
+ *
+ *
+ *   EntityManager em = ..;
+ *   Book book = em.find(Book.class, id);
+ *   book.getRelations();
+ *      1. eager loading: em.find(Book.class); => load List<book> + relations (join)
+ *      2. lazy loading : em.find(Book.class, id); => only load List<book>
+ *          for(BARelation relation: List<book>) {
+ *              List<BARelation> reList = book.getRelations()
+ *          }
+ *
+ *
+ *   Tomorrow
+ *      Spring IOC/AOP
+ *      SpringBoot
+ */
 public class ORMConfig {
 
     private DataSource getDataSource() {
@@ -48,15 +110,23 @@ public class ORMConfig {
         DataSource dataSource = ormConfig.getDataSource();
         Properties properties = ormConfig.getProperties();
         EntityManagerFactory entityManagerFactory = ormConfig.entityManagerFactory(dataSource, properties);
+
         EntityManager em = entityManagerFactory.createEntityManager();
         PersistenceUnitUtil unitUtil = entityManagerFactory.getPersistenceUnitUtil();
         //..
 
-        em.getTransaction().begin();
-        Student s = new Student();
-        s.setName("32th");
-        em.persist(s);
-        em.flush();
+//        em.getTransaction().begin();
+//        Student s = new Student();
+//        s.setName("32th");
+//        em.persist(s); //insert
+//        em.flush();
+        List<Student> sList = em.createQuery("select s from Student s").getResultList();
+        System.out.println(sList);
+        for(Student s: sList) {
+            List<Teacher_Student> ts = s.getTeacher_students();
+            System.out.println("************************************************");
+            System.out.println(s.getId() + " 's size is : " + ts.size());
+        }
     }
 
 
@@ -183,20 +253,3 @@ public class ORMConfig {
         tx.commit();
     }
 }
-
-/**
- *  spring transaction
- * @Transactional
- * public void xx() {
- *
- * }
- *  **************
- *  begin
- *      insert
- *  rollback
- *  commit
- *  **************
- *  create / drop table => ddl
- *  **************
- *  database session exit / disconnect => auto commit
- */
