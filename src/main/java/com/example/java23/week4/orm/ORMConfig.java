@@ -120,14 +120,16 @@ public class ORMConfig {
 //        s.setName("32th");
 //        em.persist(s); //insert
 //        em.flush();
-        List<Student> sList = em.createQuery("select s from Student s").getResultList();
-        System.out.println(sList);
-        for(Student s: sList) {
-            List<Teacher_Student> ts = s.getTeacher_students();
-            System.out.println("************************************************");
-            System.out.println(s.getId() + " 's size is : " + ts.size());
-        }
+//        List<Student> sList = em.createQuery("select s from Student s").getResultList();
+//        System.out.println(sList);
+//        for(Student s: sList) {
+//            List<Teacher_Student> ts = s.getTeacher_students();
+//            System.out.println("************************************************");
+//            System.out.println(s.getId() + " 's size is : " + ts.size());
+//        }
+        addToJunctionTable4(em);
     }
+
 
 
     private static void insertToStudent(EntityManager em) {
@@ -185,6 +187,19 @@ public class ORMConfig {
         ts.setTeacher(t);
         em.persist(ts);
         tx.commit();
+    }
+
+    private static void addToJunctionTable4(EntityManager em) {
+        em.getTransaction().begin();
+        Student s = new Student();
+        s.setId("14");
+        Teacher t = new Teacher();
+        t.setId("12");
+        Teacher_Student ts = new Teacher_Student();
+        ts.setStu(s);
+        ts.setTeacher(t);
+        em.persist(ts);
+        em.getTransaction().commit();
     }
 
     private static void notOrphanRemoveBiRelation(EntityManager em) {
