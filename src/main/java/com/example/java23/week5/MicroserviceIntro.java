@@ -56,11 +56,17 @@ package com.example.java23.week5;
  *      6. centralize security service
  *      7. api gateway
  *              rate limiter
- *              generate global unique id
+ *              count              12
+ *                      t1  t2  t3 t4 t5 t6  t7
+ *              generate global unique id (co-relation id)
+ *                  1. uuid
+ *                  2. database sequence / primary key
+ *                  3. snowflake
  *              log api performance
  *      8. database sharding / scalability + cache
  *      9. message queue + global transaction
  *      10. CI/CD
  *      11. monitors
+ *      12. log server
  *
  */
